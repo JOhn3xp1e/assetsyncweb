@@ -371,6 +371,29 @@
   [data-theme="light"] .phones .pos-left,
   [data-theme="light"] .phones .pos-right{opacity:1}
 
+  /* ---------- modal ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    background:rgba(0,0,0,.62);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
+  }
+  .modal.show{opacity:1;pointer-events:auto}
+  .modal-card{
+    max-width:360px;width:100%;text-align:center;
+    padding:38px 30px 32px;border-radius:26px;
+    background:var(--card);border:1px solid var(--card-border);
+    transform:translateY(16px) scale(.96);
+    transition:transform .28s cubic-bezier(.3,.9,.35,1);
+  }
+  .modal.show .modal-card{transform:none}
+  .modal-icon{font-size:2.3rem;margin-bottom:12px}
+  .modal-card h3{font-size:1.3rem;font-weight:600;margin-bottom:8px}
+  .modal-card p{color:var(--muted);font-size:.94rem;font-weight:300;margin-bottom:24px}
+  [data-theme="light"] .modal{background:rgba(70,55,25,.35)}
+  [data-theme="light"] .modal-card{box-shadow:0 30px 70px rgba(90,70,35,.3)}
+
   /* reveal animation */
   .reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s ease}
   .reveal.in{opacity:1;transform:none}
@@ -649,11 +672,11 @@
       <h2>Bring your inventory into focus</h2>
       <p>Join event teams managing their gear the smart way. AssetSync is free to get started.</p>
       <div class="badges">
-        <a class="app-badge" href="#" onclick="alert('Add your Google Play link here');return false;">
+        <a class="app-badge" href="https://expo.dev/accounts/expie/projects/AssetSync/builds/536fab4b-df57-4470-8a46-3bf181d5e337" target="_blank" rel="noopener">
           <span style="font-size:1.7rem">▶</span>
-          <span><small>GET IT ON</small><b>Google Play</b></span>
+          <span><small>GET IT ON</small><b>Android</b></span>
         </a>
-        <a class="app-badge" href="#" onclick="alert('Add your App Store link here');return false;">
+        <a class="app-badge" href="#" id="iosBadge">
           <span style="font-size:1.7rem"></span>
           <span><small>DOWNLOAD ON THE</small><b>App Store</b></span>
         </a>
@@ -695,6 +718,16 @@
     <span>Made for event &amp; rental professionals.</span>
   </div>
 </footer>
+
+<!-- ================= iOS NOT AVAILABLE DIALOG ================= -->
+<div class="modal" id="iosModal" role="dialog" aria-modal="true" aria-labelledby="iosModalTitle">
+  <div class="modal-card">
+    <div class="modal-icon">📱</div>
+    <h3 id="iosModalTitle">Not available yet</h3>
+    <p>AssetSync for iOS is coming soon. For now, grab the Android version — it has everything.</p>
+    <button class="btn btn-gold" id="iosModalClose">Got it</button>
+  </div>
+</div>
 
 </div><!-- /page -->
 
@@ -780,6 +813,16 @@ stage.querySelectorAll('.phone').forEach(p => p.addEventListener('click', () => 
   p.removeAttribute('title');
   front.setAttribute('title', 'Tap to bring to front');
 }));
+
+/* ---------- iOS "not available" dialog ---------- */
+const iosModal = document.getElementById('iosModal');
+document.getElementById('iosBadge').addEventListener('click', e => {
+  e.preventDefault();
+  iosModal.classList.add('show');
+});
+document.getElementById('iosModalClose').addEventListener('click', () => iosModal.classList.remove('show'));
+iosModal.addEventListener('click', e => { if(e.target === iosModal) iosModal.classList.remove('show'); });
+addEventListener('keydown', e => { if(e.key === 'Escape') iosModal.classList.remove('show'); });
 
 /* ---------- reveal on scroll ---------- */
 const io = new IntersectionObserver(es => es.forEach(e => {
