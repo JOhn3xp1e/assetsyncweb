@@ -161,9 +161,11 @@
 
   /* ---------- phones ---------- */
   .phones{
+    --pw:clamp(150px,20vw,250px);
+    /* cap the offset so side phones never spill past the viewport edge */
+    --shift:min(calc(var(--pw)*.98 + 2.5vw), calc(50vw - var(--pw)*.43 - 12px));
     position:relative;z-index:2;
-    display:flex;justify-content:center;align-items:flex-end;
-    gap:clamp(10px,3vw,44px);
+    height:calc(var(--pw)*2.15);
     transform:translateY(40px);
   }
   .phone{
@@ -186,11 +188,25 @@
     width:34%;height:15px;border-radius:999px;background:#000;z-index:3;
     box-shadow:0 0 0 2px rgba(255,255,255,.04);
   }
-  .phone.side{width:clamp(130px,17vw,215px);opacity:.94}
-  .phone.left{transform:rotate(-7deg) translateY(26px)}
-  .phone.right{transform:rotate(7deg) translateY(26px)}
-  .phone.center{z-index:3;box-shadow:0 0 0 1px rgba(255,190,80,.25),0 40px 90px rgba(0,0,0,.8),0 0 90px rgba(242,169,59,.22)}
-  .phone:hover{transform:translateY(-10px) scale(1.02);z-index:5}
+  /* hero slot system: click a side phone to bring it to the front */
+  .phones .phone{
+    position:absolute;left:50%;top:0;
+    width:var(--pw);
+    transition:transform .65s cubic-bezier(.22,.85,.3,1),box-shadow .65s,opacity .65s;
+    will-change:transform;
+  }
+  .phones .pos-center{
+    transform:translateX(-50%);
+    z-index:3;
+    box-shadow:0 0 0 1px rgba(255,190,80,.25),0 40px 90px rgba(0,0,0,.8),0 0 90px rgba(242,169,59,.22);
+  }
+  .phones .pos-left,
+  .phones .pos-right{opacity:.92;z-index:2;cursor:pointer}
+  .phones .pos-left{transform:translateX(calc(-50% - var(--shift))) translateY(36px) rotate(-7deg) scale(.86)}
+  .phones .pos-right{transform:translateX(calc(-50% + var(--shift))) translateY(36px) rotate(7deg) scale(.86)}
+  .phones .pos-center:hover{transform:translateX(-50%) translateY(-8px)}
+  .phones .pos-left:hover{transform:translateX(calc(-50% - var(--shift))) translateY(24px) rotate(-7deg) scale(.88);opacity:1}
+  .phones .pos-right:hover{transform:translateX(calc(-50% + var(--shift))) translateY(24px) rotate(7deg) scale(.88);opacity:1}
   .hero-fade{
     position:absolute;left:0;right:0;bottom:0;height:170px;z-index:4;
     background:linear-gradient(180deg,transparent,var(--bg) 82%);
@@ -394,11 +410,11 @@
     .hero-actions .btn{justify-content:center}
     .orb-wrap{margin-top:44px;min-height:290px}
     .orb{width:175vw;bottom:-112vw}
-    .phones{gap:0;transform:translateY(28px)}
-    .phone.center{width:min(50vw,210px)}
-    .phone.side{width:34vw;max-width:148px;opacity:.9}
-    .phone.left{transform:rotate(-10deg) translateY(30px);margin-right:-7vw}
-    .phone.right{transform:rotate(10deg) translateY(30px);margin-left:-7vw}
+    .phones{
+      --pw:min(50vw,205px);
+      --shift:min(calc(var(--pw)*.66), calc(50vw - var(--pw)*.43 - 8px));
+      transform:translateY(28px);
+    }
     .stats{margin-top:56px}
     .stat{padding:18px 10px;border-radius:18px}
     .stat b{font-size:1.35rem}
@@ -460,13 +476,13 @@
   <div class="orb-wrap">
     <div class="orb"></div>
     <div class="phones reveal">
-      <div class="phone side left">
+      <div class="phone pos-left" title="Tap to bring to front">
         <img src="appimage/Screenshot_2026-07-02-22-14-30-708_com.assetsync.app.jpg" alt="AssetSync inventory screen" loading="lazy">
       </div>
-      <div class="phone center">
+      <div class="phone pos-center">
         <img src="appimage/Screenshot_2026-07-02-22-14-24-496_com.assetsync.app.jpg" alt="AssetSync dashboard screen">
       </div>
-      <div class="phone side right">
+      <div class="phone pos-right" title="Tap to bring to front">
         <img src="appimage/Screenshot_2026-07-02-22-14-42-347_com.assetsync.app.jpg" alt="AssetSync events screen" loading="lazy">
       </div>
     </div>
@@ -750,6 +766,18 @@ addEventListener('scroll', () => {
   plainLinks.forEach(a => a.classList.remove('active'));
   if(linkMap[current]) linkMap[current].classList.add('active');
 }, {passive:true});
+
+/* ---------- hero phone swap: click a side phone to bring it to front ---------- */
+const stage = document.querySelector('.phones');
+stage.querySelectorAll('.phone').forEach(p => p.addEventListener('click', () => {
+  if(p.classList.contains('pos-center')) return;
+  const front = stage.querySelector('.pos-center');
+  const slot = p.classList.contains('pos-left') ? 'pos-left' : 'pos-right';
+  p.classList.replace(slot, 'pos-center');
+  front.classList.replace('pos-center', slot);
+  p.removeAttribute('title');
+  front.setAttribute('title', 'Tap to bring to front');
+}));
 
 /* ---------- reveal on scroll ---------- */
 const io = new IntersectionObserver(es => es.forEach(e => {
